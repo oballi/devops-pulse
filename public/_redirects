@@ -1,6 +1,0 @@
-# SPA Routing for Cloudflare Pages
-# Tüm istekleri index.html'e yönlendir, ancak dosya varsa (css, js, png vb.) onu ver.
-# Cloudflare Pages için doğru sözdizimi budur:
-
-/assets/* /assets/:splat 200
-/* /index.html 200
