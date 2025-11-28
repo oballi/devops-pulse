@@ -12,6 +12,7 @@ export interface BlogPost {
   status?: 'published' | 'draft';
   views?: number;
   category?: string;
+  slug?: string;
   deleted_at?: string | null;
 }
 

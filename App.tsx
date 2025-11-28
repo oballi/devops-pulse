@@ -7,7 +7,7 @@ import LoginView from './components/LoginView';
 import AdminPanel from './components/AdminPanel';
 import EditorView from './components/EditorView';
 import AboutView from './components/AboutView';
-import { fetchTrendingPosts, login, fetchCategories, fetchPostById } from './services/dataService';
+import { fetchTrendingPosts, login, fetchCategories, fetchPostById, fetchPostBySlug } from './services/dataService';
 import { BlogPost, LoadingState, User, Category } from './types';
 import { Loader2 } from 'lucide-react';
 import { useNotification } from './contexts/NotificationContext';
@@ -30,11 +30,10 @@ const HomePage: React.FC<{
       <div className="flex items-center gap-2 mb-12 overflow-x-auto pb-2 no-scrollbar">
         <button
           onClick={() => setSelectedCategory('Tümü')}
-          className={`px-5 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${
-            selectedCategory === 'Tümü'
+          className={`px-5 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${selectedCategory === 'Tümü'
               ? 'bg-black dark:bg-white text-white dark:text-black'
               : 'bg-gray-100 dark:bg-dark-card text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-dark-border'
-          }`}
+            }`}
         >
           Tümü
         </button>
@@ -42,11 +41,10 @@ const HomePage: React.FC<{
           <button
             key={category.id}
             onClick={() => setSelectedCategory(category.name)}
-            className={`px-5 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${
-              selectedCategory === category.name
+            className={`px-5 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${selectedCategory === category.name
                 ? 'bg-black dark:bg-white text-white dark:text-black'
                 : 'bg-gray-100 dark:bg-dark-card text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-dark-border'
-            }`}
+              }`}
           >
             {category.name}
           </button>
@@ -62,10 +60,10 @@ const HomePage: React.FC<{
         <div className="flex flex-col">
           {posts.length > 0 ? (
             posts.map(post => (
-              <ArticleCard 
-                key={post.id} 
-                post={post} 
-                onClick={onPostClick} 
+              <ArticleCard
+                key={post.id}
+                post={post}
+                onClick={onPostClick}
               />
             ))
           ) : (
@@ -77,10 +75,10 @@ const HomePage: React.FC<{
           )}
         </div>
       )}
-      
+
       {hasMore && posts.length > 0 && (
         <div className="mt-12 text-center">
-          <button 
+          <button
             className="px-8 py-3 bg-white dark:bg-transparent border border-gray-200 dark:border-dark-border rounded-full text-gray-600 dark:text-gray-300 font-medium hover:border-gray-400 dark:hover:border-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors font-sans text-sm"
             onClick={onLoadMore}
           >
@@ -99,21 +97,22 @@ interface ArticlePageProps {
 }
 
 const ArticlePage: React.FC<ArticlePageProps> = ({ user, onEditClick }) => {
-  const { id } = useParams<{ id: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const [post, setPost] = useState<BlogPost | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
     const loadPost = async () => {
-      if (!id) {
+      if (!slug) {
         navigate('/');
         return;
       }
-      
+
       setLoading(true);
-      const fetchedPost = await fetchPostById(id);
-      
+      // fetchPostBySlug handles both slug and UUID (fallback)
+      const fetchedPost = await fetchPostBySlug(slug);
+
       if (fetchedPost) {
         setPost(fetchedPost);
       } else {
@@ -123,7 +122,7 @@ const ArticlePage: React.FC<ArticlePageProps> = ({ user, onEditClick }) => {
     };
 
     loadPost();
-  }, [id, navigate]);
+  }, [slug, navigate]);
 
   if (loading) {
     return (
@@ -145,13 +144,13 @@ const App: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { success, error, info, confirm } = useNotification();
-  
+
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState<LoadingState>(LoadingState.LOADING);
   const [user, setUser] = useState<User | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
-  
+
   // Theme State
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     if (typeof window !== 'undefined') {
@@ -202,7 +201,7 @@ const App: React.FC = () => {
         fetchTrendingPosts(selectedCategory, 1, 5, undefined, searchQuery),
         fetchCategories()
       ]);
-      
+
       setPosts(data);
       setCategories(cats);
       setHasMore(data.length === 5);
@@ -220,7 +219,7 @@ const App: React.FC = () => {
   const handleLoadMore = async () => {
     const nextPage = page + 1;
     const newPosts = await fetchTrendingPosts(selectedCategory, nextPage, 5, undefined, searchQuery);
-    
+
     if (newPosts.length > 0) {
       setPosts([...posts, ...newPosts]);
       setPage(nextPage);
@@ -231,7 +230,7 @@ const App: React.FC = () => {
   };
 
   const handlePostClick = (post: BlogPost) => {
-    navigate(`/article/${post.id}`);
+    navigate(`/article/${post.slug || post.id}`);
   };
 
   const handleHomeClick = () => {
@@ -287,7 +286,7 @@ const App: React.FC = () => {
       cancelText: 'İptal',
       type: 'info'
     });
-    
+
     if (confirmed) {
       setUser(null);
       localStorage.removeItem('user_session');
@@ -299,7 +298,7 @@ const App: React.FC = () => {
   const handlePublishPost = async (newPost: BlogPost) => {
     success('Tebrikler! 🎉', 'Makaleniz başarıyla yayınlandı.');
     // Yayınlanan makaleye yönlendir
-    navigate(`/article/${newPost.id}`);
+    navigate(`/article/${newPost.slug || newPost.id}`);
     // Anasayfa verilerini arka planda güncelle
     setPage(1);
     fetchTrendingPosts(selectedCategory, 1, 5, undefined, searchQuery).then(data => {
@@ -327,11 +326,11 @@ const App: React.FC = () => {
   };
 
   return (
-    <Layout 
+    <Layout
       user={user}
       theme={theme}
       toggleTheme={toggleTheme}
-      onHomeClick={handleHomeClick} 
+      onHomeClick={handleHomeClick}
       onLoginClick={handleLoginClick}
       onAdminClick={handleAdminClick}
       onLogoutClick={handleLogout}
@@ -341,7 +340,7 @@ const App: React.FC = () => {
     >
       <Routes>
         <Route path="/" element={
-          <HomePage 
+          <HomePage
             posts={posts}
             loading={loading}
             categories={categories}
@@ -353,44 +352,44 @@ const App: React.FC = () => {
             onPostClick={handlePostClick}
           />
         } />
-        
-        <Route path="/article/:id" element={<ArticlePage user={user} onEditClick={handleEditPost} />} />
-        
+
+        <Route path="/article/:slug" element={<ArticlePage user={user} onEditClick={handleEditPost} />} />
+
         <Route path="/login" element={
           <LoginView onLogin={handlePerformLogin} />
         } />
-        
+
         <Route path="/admin" element={
           user ? (
-            <AdminPanel 
-              user={user} 
-              onCreateClick={handleWriteClick} 
-              onEditClick={handleEditPost} 
+            <AdminPanel
+              user={user}
+              onCreateClick={handleWriteClick}
+              onEditClick={handleEditPost}
               onUserUpdate={handleUserUpdate}
             />
           ) : (
             <LoginView onLogin={handlePerformLogin} />
           )
         } />
-        
+
         <Route path="/editor" element={
           user ? (
-            <EditorView 
-              user={user} 
-              post={editingPost || undefined} 
-              onPublish={handlePublishPost} 
-              onCancel={handleCancelEdit} 
+            <EditorView
+              user={user}
+              post={editingPost || undefined}
+              onPublish={handlePublishPost}
+              onCancel={handleCancelEdit}
             />
           ) : (
             <LoginView onLogin={handlePerformLogin} />
           )
         } />
-        
+
         <Route path="/about" element={<AboutView />} />
-        
+
         {/* Catch all - redirect to home */}
         <Route path="*" element={
-          <HomePage 
+          <HomePage
             posts={posts}
             loading={loading}
             categories={categories}
