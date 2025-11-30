@@ -165,7 +165,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, theme, toggleTheme, onH
           <div className="text-gray-400 dark:text-gray-500 text-sm font-sans flex flex-col md:flex-row items-center gap-2 md:gap-6">
             <div className="flex items-center gap-2">
               <Terminal size={16} />
-              <span>© {new Date().getFullYear()} omer.in Teknoloji Blogu.</span>
+              <span>© {new Date().getFullYear()} omer.in devops bloğu.</span>
             </div>
           </div>
         </div>

@@ -22,7 +22,6 @@ npm run dev
 ## Yazar
 
 **Ömer Faruk Ballı**  
-DevOps Engineer @ Innova
 
 📧 farukomerballi@gmail.com
 
