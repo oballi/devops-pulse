@@ -1,72 +1,80 @@
 -- --------------------------------------------------------
 -- Supabase Database Schema
--- Generated based on application logic (types.ts & dataService.ts)
+-- Synced with actual Supabase project state
 -- --------------------------------------------------------
 
--- 1. Users Table
--- Kullanıcı bilgilerini tutar.
+-- Enable necessary extensions
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "pgcrypto"; -- For password hashing if needed
+
+-- --------------------------------------------------------
+-- 1. Tables
+-- --------------------------------------------------------
+
+-- Users Table
 CREATE TABLE IF NOT EXISTS public.users (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    username TEXT NOT NULL UNIQUE,
-    password TEXT NOT NULL, -- Not: Prod ortamında hashlenmiş olmalı
+    username TEXT UNIQUE,
+    password TEXT,
     full_name TEXT,
     avatar_url TEXT,
-    role TEXT DEFAULT 'reader' CHECK (role IN ('admin', 'editor', 'reader')),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()),
+    role TEXT DEFAULT 'editor'
 );
 
--- 2. Categories Table
--- Blog kategorilerini tutar.
+-- Categories Table
 CREATE TABLE IF NOT EXISTS public.categories (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    name TEXT NOT NULL,
-    slug TEXT NOT NULL UNIQUE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+    name TEXT UNIQUE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
 
--- 3. Posts Table
--- Blog yazılarını tutar.
+-- Posts Table
 CREATE TABLE IF NOT EXISTS public.posts (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    title TEXT NOT NULL,
-    slug TEXT UNIQUE, -- SEO dostu URL için
-    content TEXT,
+    id UUID DEFAULT extensions.uuid_generate_v4() PRIMARY KEY,
+    title TEXT,
     excerpt TEXT,
-    author TEXT, -- Denormalize yazar adı (opsiyonel)
-    author_id UUID REFERENCES public.users(id),
+    content TEXT,
+    author TEXT DEFAULT 'Admin',
+    category TEXT DEFAULT 'Genel',
     image_url TEXT,
-    read_time TEXT,
-    category TEXT, -- Kategori adı (veya ID'si)
-    tags TEXT[], -- Etiketler array olarak tutulur
-    status TEXT DEFAULT 'draft' CHECK (status IN ('published', 'draft', 'deleted')),
+    status TEXT DEFAULT 'published',
     views INTEGER DEFAULT 0,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()),
-    deleted_at TIMESTAMP WITH TIME ZONE -- Soft delete için
+    read_time TEXT DEFAULT '5 dk okuma',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()),
+    deleted_at TIMESTAMP WITH TIME ZONE,
+    tags TEXT[] DEFAULT '{}',
+    author_id UUID REFERENCES public.users(id),
+    slug TEXT UNIQUE
 );
 
--- 4. Storage (Opsiyonel)
--- 'images' adında bir bucket oluşturulmalı ve public erişim verilmeli.
-
 -- --------------------------------------------------------
--- RLS (Row Level Security) Policies (Örnek)
+-- 2. Storage Buckets
 -- --------------------------------------------------------
 
--- Posts tablosu için okuma izni (herkes okuyabilir)
-ALTER TABLE public.posts ENABLE ROW LEVEL SECURITY;
+-- Create 'images' bucket if it doesn't exist
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('images', 'images', true)
+ON CONFLICT (id) DO NOTHING;
 
-CREATE POLICY "Public posts are viewable by everyone" 
-ON public.posts FOR SELECT 
-USING (status = 'published' AND deleted_at IS NULL);
+-- --------------------------------------------------------
+-- 3. Security Policies (RLS)
+-- --------------------------------------------------------
 
--- Sadece giriş yapmış kullanıcılar yazı ekleyebilir
-CREATE POLICY "Authenticated users can insert posts" 
-ON public.posts FOR INSERT 
-TO authenticated 
-WITH CHECK (true);
+-- Note: RLS is currently disabled for tables in the project.
+-- To enable, uncomment the following lines:
+-- ALTER TABLE public.posts ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
 
--- Yazarlar sadece kendi yazılarını güncelleyebilir
-CREATE POLICY "Users can update own posts" 
-ON public.posts FOR UPDATE 
-TO authenticated 
-USING (auth.uid() = author_id);
+-- Storage Policies (Example for 'images' bucket)
+-- Allow public read access to 'images' bucket
+CREATE POLICY "Public Access"
+ON storage.objects FOR SELECT
+USING ( bucket_id = 'images' );
+
+-- Allow authenticated uploads to 'images' bucket
+CREATE POLICY "Authenticated Uploads"
+ON storage.objects FOR INSERT
+TO authenticated
+WITH CHECK ( bucket_id = 'images' );
