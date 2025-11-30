@@ -1,114 +1,122 @@
 <!DOCTYPE html>
 <html lang="tr">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>DevOps Pulse</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        darkMode: 'class',
-        theme: {
-          extend: {
-            fontFamily: {
-              serif: ['Lora', 'serif'],
-              sans: ['Inter', 'system-ui', 'sans-serif'],
-              mono: ['Fira Code', 'monospace'],
-            },
-            colors: {
-              primary: '#1a1a1a',
-              secondary: '#6b7280',
-              accent: '#2563eb',
-              dark: {
-                bg: '#0f0f0f',
-                card: '#18181b',
-                border: '#27272a'
-              }
-            },
-            typography: (theme) => ({
-              DEFAULT: {
-                css: {
-                  color: theme('colors.gray.800'),
-                  a: {
-                    color: theme('colors.accent'),
-                    '&:hover': {
-                      color: theme('colors.blue.700'),
-                    },
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>omer.in devops bloğu</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            serif: ['Lora', 'serif'],
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['Fira Code', 'monospace'],
+          },
+          colors: {
+            primary: '#1a1a1a',
+            secondary: '#6b7280',
+            accent: '#2563eb',
+            dark: {
+              bg: '#0f0f0f',
+              card: '#18181b',
+              border: '#27272a'
+            }
+          },
+          typography: (theme) => ({
+            DEFAULT: {
+              css: {
+                color: theme('colors.gray.800'),
+                a: {
+                  color: theme('colors.accent'),
+                  '&:hover': {
+                    color: theme('colors.blue.700'),
                   },
                 },
               },
-            }),
-          },
+            },
+          }),
         },
+      },
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Fira+Code:wght@400;500&display=swap');
+
+    body {
+      /* background-color set in Layout via Tailwind classes */
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Prevent layout shift by always showing scrollbar track */
+
+    html {
+      overflow-y: scroll;
+    }
+
+    /* Hide scrollbar for clean look but allow scroll */
+
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* Animation keyframes */
+
+    @keyframes fade-in {
+      from {
+        opacity: 0;
       }
-    </script>
-    <style>
-      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Fira+Code:wght@400;500&display=swap');
-      
-      body {
-        /* background-color set in Layout via Tailwind classes */
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
+
+      to {
+        opacity: 1;
       }
-      
-      /* Prevent layout shift by always showing scrollbar track */
-      
-      html {
-        overflow-y: scroll;
+    }
+
+    @keyframes scale-in {
+      from {
+        opacity: 0;
+        transform: scale(0.95);
       }
-      
-      /* Hide scrollbar for clean look but allow scroll */
-      
-      .no-scrollbar::-webkit-scrollbar {
-          display: none;
+
+      to {
+        opacity: 1;
+        transform: scale(1);
       }
-      
-      .no-scrollbar {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
+    }
+
+    @keyframes slide-in-right {
+      from {
+        opacity: 0;
+        transform: translateX(100%);
       }
-      
-      /* Animation keyframes */
-      
-      @keyframes fade-in {
-        from { opacity: 0; }
-        to { opacity: 1; }
+
+      to {
+        opacity: 1;
+        transform: translateX(0);
       }
-      
-      @keyframes scale-in {
-        from { 
-          opacity: 0; 
-          transform: scale(0.95); 
-        }
-        to { 
-          opacity: 1; 
-          transform: scale(1); 
-        }
-      }
-      
-      @keyframes slide-in-right {
-        from { 
-          opacity: 0; 
-          transform: translateX(100%); 
-        }
-        to { 
-          opacity: 1; 
-          transform: translateX(0); 
-        }
-      }
-      
-      .animate-fade-in {
-        animation: fade-in 0.2s ease-out;
-      }
-      
-      .animate-scale-in {
-        animation: scale-in 0.2s ease-out;
-      }
-      
-      .animate-slide-in-right {
-        animation: slide-in-right 0.3s ease-out;
-      }
-    </style>
+    }
+
+    .animate-fade-in {
+      animation: fade-in 0.2s ease-out;
+    }
+
+    .animate-scale-in {
+      animation: scale-in 0.2s ease-out;
+    }
+
+    .animate-slide-in-right {
+      animation: slide-in-right 0.3s ease-out;
+    }
+  </style>
 
   <script type="importmap">
 {
@@ -121,10 +129,12 @@
   }
 }
 </script>
-  <script type="module" crossorigin src="/devops-pulse/assets/index-C6cSv28L.js"></script>
+  <script type="module" crossorigin src="/devops-pulse/assets/index-D6FQ4HIA.js"></script>
   <link rel="stylesheet" crossorigin href="/devops-pulse/assets/index-C6G_3qQV.css">
 </head>
-  <body>
-    <div id="root"></div>
+
+<body>
+  <div id="root"></div>
 </body>
+
 </html>
